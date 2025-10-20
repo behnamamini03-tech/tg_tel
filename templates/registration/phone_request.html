@@ -1,0 +1,112 @@
+{% extends 'registration/base.html' %}
+
+{% block title %}
+    وارد کردن شماره
+{% endblock %}
+
+{% block main %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <!-- فرم ثبت تک شماره -->
+    <div class="col-md-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">ثبت تک شماره تلفن</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <form method="post">
+                {% csrf_token %}
+                <div class="card-body">
+                    {% if phone_form.errors %}
+                        <div class="alert alert-danger alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                            <h5><i class="icon fas fa-ban"></i> خطا!</h5>
+                            {% for field in phone_form %}
+                                {% for error in field.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="{{ phone_form.phone.id_for_label }}">{{ phone_form.phone.label }}</label>
+                        {{ phone_form.phone }}
+                        {% if phone_form.phone.help_text %}
+                            <small class="form-text text-muted">{{ phone_form.phone.help_text }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- /.card-body -->
+
+                <div class="card-footer">
+                    <button type="submit" name="phone_submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> ثبت شماره
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- فرم آپلود فایل اکسل -->
+    <div class="col-md-6">
+        <div class="card card-success">
+            <div class="card-header">
+                <h3 class="card-title">آپلود فایل اکسل</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card-body">
+                    {% if excel_form.errors %}
+                        <div class="alert alert-danger alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                            <h5><i class="icon fas fa-ban"></i> خطا!</h5>
+                            {% for field in excel_form %}
+                                {% for error in field.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="{{ excel_form.excel_file.id_for_label }}">{{ excel_form.excel_file.label }}</label>
+                        {{ excel_form.excel_file }}
+                        {% if excel_form.excel_file.help_text %}
+                            <small class="form-text text-muted">{{ excel_form.excel_file.help_text }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h5><i class="icon fas fa-info"></i> راهنما:</h5>
+                        <ul class="mb-0">
+                            <li>فایل اکسل باید دارای ستونی با نام "phone" یا "شماره" باشد</li>
+                            <li>شماره‌ها می‌توانند با 0 شروع شوند (مثال: 09123456789)</li>
+                            <li>یا با کد کشور باشند (مثال: +989123456789)</li>
+                            <li>حداکثر حجم فایل: 5 مگابایت</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- /.card-body -->
+
+                <div class="card-footer">
+                    <button type="submit" name="excel_submit" class="btn btn-success">
+                        <i class="fas fa-upload"></i> آپلود و پردازش
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

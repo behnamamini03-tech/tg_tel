@@ -1,0 +1,161 @@
+{% extends 'registration/base.html' %}
+{% load static %}
+
+{% block title %}
+    تاریخچه شماره‌ها
+{% endblock %}
+
+{% block main %}
+<div class="row">
+    <div class="col-12">
+        <!-- آمار کلی -->
+        <div class="row mb-3">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>{{ total_phones }}</h3>
+                        <p>تعداد کل شماره‌ها</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>{{ page_obj.paginator.count }}</h3>
+                        <p>نتایج جستجو</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">تاریخچه شماره‌های ثبت شده</h3>
+                <div class="card-tools">
+                    <!-- دکمه Export -->
+                    <a href="{% url 'app:export_phones' %}" class="btn btn-success btn-sm ml-2">
+                        <i class="fas fa-file-excel"></i> دانلود اکسل
+                    </a>
+                    <!-- فرم جستجو -->
+                    <form method="get" class="form-inline d-inline">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <input type="text" name="search" class="form-control float-right" 
+                                   placeholder="جستجوی شماره..." value="{{ search_query }}">
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-default">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>شماره تلفن</th>
+                            <th>تاریخ ثبت</th>
+                            <th>ساعت ثبت</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if page_obj %}
+                            {% for phone in page_obj %}
+                                <tr>
+                                    <td>{{ forloop.counter|add:page_obj.start_index|add:"-1" }}</td>
+                                    <td>
+                                        <span class="badge badge-info">{{ phone.phone }}</span>
+                                    </td>
+                                    <td>
+                                        <i class="far fa-calendar-alt"></i>
+                                        {{ phone.jinfo }}
+                                    </td>
+                                    
+                                    <td>
+                                        <span class="badge badge-secondary">
+                                            {{ phone.created_at|timesince }} پیش
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    <div class="alert alert-warning m-3">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        هیچ شماره‌ای یافت نشد!
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- /.card-body -->
+            
+            <!-- صفحه‌بندی -->
+            {% if page_obj.has_other_pages %}
+                <div class="card-footer clearfix">
+                    <ul class="pagination pagination-sm m-0 float-left">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">
+                                    <i class="fas fa-angle-double-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                        {{ num }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                    <i class="fas fa-angle-double-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <div class="float-right">
+                        <small class="text-muted">
+                            نمایش {{ page_obj.start_index }} تا {{ page_obj.end_index }} از {{ page_obj.paginator.count }} مورد
+                        </small>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <!-- /.card -->
+    </div>
+</div>
+{% endblock %}

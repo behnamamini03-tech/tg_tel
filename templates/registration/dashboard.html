@@ -1,0 +1,350 @@
+{% extends 'registration/base.html' %}
+{% load static %}
+
+{% block title %}
+    داشبورد - نمایش اطلاعات
+{% endblock %}
+
+{% block main %}
+<!-- آمار کلی -->
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ total_phones }}</h3>
+                <p>کل شماره‌های ثبت شده</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-phone"></i>
+            </div>
+            <a href="{% url 'app:phone_history' %}" class="small-box-footer">
+                مشاهده جزئیات <i class="fas fa-arrow-circle-left"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ today_phones }}</h3>
+                <p>شماره‌های امروز</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <a href="{% url 'app:phone_history' %}" class="small-box-footer">
+                مشاهده جزئیات <i class="fas fa-arrow-circle-left"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ week_phones }}</h3>
+                <p>شماره‌های این هفته</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-calendar-week"></i>
+            </div>
+            <a href="{% url 'app:phone_history' %}" class="small-box-footer">
+                مشاهده جزئیات <i class="fas fa-arrow-circle-left"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>{{ month_phones }}</h3>
+                <p>شماره‌های این ماه</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <a href="{% url 'app:phone_history' %}" class="small-box-footer">
+                مشاهده جزئیات <i class="fas fa-arrow-circle-left"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- نمودارها -->
+<div class="row">
+    <!-- نمودار روزانه -->
+    <div class="col-md-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-line mr-1"></i>
+                    آمار 7 روز اخیر
+                </h3>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- نمودار ماهانه -->
+    <div class="col-md-6">
+        <div class="card card-success">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-bar mr-1"></i>
+                    آمار 6 ماه اخیر
+                </h3>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyChart" style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جداول اطلاعات -->
+<div class="row">
+    <!-- آخرین شماره‌های ثبت شده -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header border-transparent">
+                <h3 class="card-title">
+                    <i class="fas fa-list mr-1"></i>
+                    آخرین شماره‌های ثبت شده
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table m-0">
+                        <thead>
+                            <tr>
+                                <th>شماره تلفن</th>
+                                <th>تاریخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for phone in recent_phones %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-info">{{ phone.phone }}</span>
+                                </td>
+                                <td>{{ phone.jinfo }}</td>
+                                
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">
+                                    هیچ شماره‌ای ثبت نشده است
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer clearfix">
+                <a href="{% url 'app:phone_history' %}" class="btn btn-sm btn-info float-left">مشاهده همه</a>
+                <a href="{% url 'app:phone_request' %}" class="btn btn-sm btn-success float-right">افزودن شماره جدید</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- آخرین کاربران -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header border-transparent">
+                <h3 class="card-title">
+                    <i class="fas fa-users mr-1"></i>
+                    اطلاعات آخرین کاربران ({{ total_users }} کاربر)
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table m-0">
+                        <thead>
+                            <tr>
+                                <th>نام کاربری</th>
+                                <th>تلگرام ID</th>
+                                <th>تاریخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in recent_users %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-user text-primary"></i>
+                                    {{ user.user_name }}
+                                </td>
+                                <td>
+                                    <code>{{ user.telegram_Id }}</code>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">
+                                        {{ user.created_at|timesince }} پیش
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">
+                                    هیچ کاربری ثبت نشده است
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if total_users > 5 %}
+            <div class="card-footer clearfix">
+                <a href="/admin/app/userdata/" class="btn btn-sm btn-info float-left">مشاهده همه</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- اطلاعات سیستم -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-outline card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    اطلاعات سیستم
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon"><i class="fas fa-database"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">کل رکوردها</span>
+                                <span class="info-box-number">{{ total_phones|add:total_users }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon"><i class="fas fa-phone-alt"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">شماره تلفن‌ها</span>
+                                <span class="info-box-number">{{ total_phones }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon"><i class="fas fa-users"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">کاربران</span>
+                                <span class="info-box-number">{{ total_users }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">آخرین به‌روزرسانی</span>
+                                <span class="info-box-number" style="font-size: 14px;">
+                                    {% if recent_phones %}
+                                        {{ recent_phones.0.created_at|timesince }} پیش
+                                    {% else %}
+                                        ---
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- اسکریپت نمودارها -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // نمودار روزانه
+    var dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    var dailyChart = new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ daily_labels|safe }},
+            datasets: [{
+                label: 'تعداد شماره‌ها',
+                data: {{ daily_data|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // نمودار ماهانه
+    var monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    var monthlyChart = new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ monthly_labels|safe }},
+            datasets: [{
+                label: 'تعداد شماره‌ها',
+                data: {{ monthly_data|safe }},
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
