@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import PhoneRequest, UserData
 
+
+
 @admin.register(PhoneRequest)
 class PhoneRequestAdmin(admin.ModelAdmin):
     list_display = ('phone', 'created_at', 'id')

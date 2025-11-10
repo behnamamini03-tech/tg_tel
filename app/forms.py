@@ -29,8 +29,7 @@ class PhoneRequestForm(forms.ModelForm):
             raise forms.ValidationError('این شماره تلفن قبلاً ثبت شده است')
         
         return phone
-
-
+    
 class ExcelUploadForm(forms.Form):
     excel_file = forms.FileField(
         label='فایل اکسل',
@@ -55,6 +54,3 @@ class ExcelUploadForm(forms.Form):
                 raise forms.ValidationError('حجم فایل نباید بیشتر از 5 مگابایت باشد')
         
         return file
-    
-        
-    

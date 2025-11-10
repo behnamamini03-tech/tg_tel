@@ -1,0 +1,165 @@
+<!-- templates/registration/sherlock_result.html -->
+{% extends 'registration/base.html' %}
+
+{% block title %}نتایج جستجو - {{ search.username }}{% endblock %}
+
+{% block main %}
+<style>
+    .result-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .header-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        margin-bottom: 30px;
+    }
+    .header-box h1 {
+        margin: 0 0 15px 0;
+        font-size: 2em;
+    }
+    .header-info {
+        display: flex;
+        gap: 30px;
+        margin-top: 15px;
+    }
+    .header-info div {
+        background: rgba(255,255,255,0.2);
+        padding: 10px 20px;
+        border-radius: 8px;
+    }
+    .profiles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .profile-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-right: 5px solid #28a745;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .profile-card h3 {
+        margin-top: 0;
+        color: #667eea;
+        font-size: 1.3em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .profile-card h3:before {
+        content: "✓";
+        background: #28a745;
+        color: white;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 14px;
+    }
+    .profile-link {
+        display: block;
+        color: #667eea;
+        text-decoration: none;
+        word-break: break-all;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin-top: 10px;
+        transition: background 0.2s;
+    }
+    .profile-link:hover {
+        background: #e9ecef;
+        text-decoration: underline;
+    }
+    .no-results {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .no-results h2 {
+        font-size: 2.5em;
+        margin-bottom: 15px;
+    }
+    .no-results p {
+        font-size: 1.2em;
+        color: #666;
+    }
+    .back-btn {
+        display: inline-block;
+        padding: 12px 30px;
+        background: #6c757d;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    .back-btn:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108,117,125,0.3);
+    }
+    .error-box {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #f5c6cb;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="result-container">
+    <div class="header-box">
+        <h1>نتایج جستجو: {{ search.username }}</h1>
+        <div class="header-info">
+            <div>
+                <strong>📅 تاریخ:</strong> {{ search.search_date|date:"Y/m/d H:i" }}
+            </div>
+            <div>
+                <strong>📊 وضعیت:</strong> {{ search.get_status_display }}
+            </div>
+            <div>
+                <strong>✅ یافت شده:</strong> {{ search.total_found }} پروفایل
+            </div>
+        </div>
+    </div>
+    
+    {% if found_profiles %}
+        <div class="profiles-grid">
+            {% for site, data in found_profiles.items %}
+            <div class="profile-card">
+                <h3>{{ site }}</h3>
+                <a href="{{ data.url_user }}" target="_blank" class="profile-link">
+                    {{ data.url_user }}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-results">
+            <h2>😔</h2>
+            <h2>هیچ پروفایلی پیدا نشد</h2>
+            <p>نام کاربری "{{ search.username }}" در هیچ سایتی یافت نشد.</p>
+        </div>
+    {% endif %}
+    
+    <a href="{% url 'app:sherlock_search' %}" class="back-btn">← بازگشت به جستجو</a>
+</div>
+{% endblock %}

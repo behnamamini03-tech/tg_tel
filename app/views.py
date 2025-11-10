@@ -1,16 +1,24 @@
-from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.db.models import Count
 from django.db.models.functions import TruncDate, TruncMonth
+import json
+import subprocess
 from .forms import PhoneRequestForm, ExcelUploadForm
 from .models import PhoneRequest, UserData
 import pandas as pd
 import phonenumbers
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import SherlockSearch
+from .sherlock_utils import run_sherlock_search
 from phonenumbers import NumberParseException
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.conf import settings
+from pathlib import Path
 
 def phone_request_view(request):
     phone_form = PhoneRequestForm()
@@ -234,3 +242,116 @@ def dashboard_view(request):
     }
     
     return render(request, 'registration/dashboard.html', context)
+
+
+# app/views.py
+import json
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import SherlockSearch
+from .sherlock_utils import run_sherlock_search  # ✅ import
+
+@login_required
+def sherlock_search(request):
+    """
+    صفحه جستجوی نام کاربری
+    """
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        
+        if not username:
+            messages.error(request, 'لطفاً نام کاربری را وارد کنید')
+            return redirect('sherlock_search')
+        
+        # ذخیره در دیتابیس
+        search_record = SherlockSearch.objects.create(
+            username=username,
+            status='pending'
+        )
+        
+        # اجرای Sherlock
+        result = run_sherlock_search(username)  # ✅ استفاده از utils
+        
+        # ذخیره نتایج
+        if result['success']:
+            search_record.status = 'completed'
+            search_record.results = result['data']
+            search_record.total_found = result['found_count']
+            search_record.save()
+            messages.success(request, f'✅ جستجو تکمیل شد! {result["found_count"]} پروفایل پیدا شد')
+        else:
+            search_record.status = 'failed'
+            search_record.results = result  # ذخیره کل دیکشنری خطا
+            search_record.save()
+            messages.error(request, f'❌ خطا: {result.get('error', 'خطای نامشخص')}')
+        
+            return redirect('app:sherlock_result', pk=search_record.pk)
+    
+    # نمایش فرم
+    recent_searches = SherlockSearch.objects.all()[:10]
+    return render(request, 'registration/sherlock_search.html', {
+        'recent_searches': recent_searches
+    })
+
+
+@login_required
+def sherlock_result(request, pk):
+    """
+    نمایش نتایج جستجو
+    """
+    search_record = get_object_or_404(SherlockSearch, pk=pk)
+
+    # استخراج پروفایل‌های پیدا شده
+    found_profiles = {}
+    error_details = None
+
+    # دیباگ: نمایش مقدار دقیق نتایج
+    print("\n================= DEBUG SHERLOCK RESULT =================")
+    print(f"search_record.results: {json.dumps(search_record.results, ensure_ascii=False, indent=2) if search_record.results else search_record.results}")
+
+    if search_record.results:
+        if isinstance(search_record.results, dict):
+            if 'error' in search_record.results:
+                error_details = search_record.results
+            else:
+                for site, data in search_record.results.items():
+                    if isinstance(data, dict) and data.get('url_user'):
+                        found_profiles[site] = data
+        elif isinstance(search_record.results, str):
+            # خروجی متنی: استخراج لینک پروفایل‌ها
+            lines = search_record.results.splitlines()
+            for line in lines:
+                if line.strip().startswith('[+]'):
+                    try:
+                        site_part, url = line.split(':', 1)
+                        site = site_part.replace('[+]', '').strip()
+                        url = url.strip()
+                        found_profiles[site] = {'url_user': url}
+                    except Exception:
+                        continue
+    print(f"found_profiles: {json.dumps(found_profiles, ensure_ascii=False, indent=2)}")
+    print("========================================================\n")
+
+    return render(request, 'registration/sherlock_result.html', {
+        'search': search_record,
+        'found_profiles': found_profiles,
+        'error_details': error_details
+    })
+    
+@login_required
+@require_http_methods(["POST"])
+def sherlock_search_delete(request, pk):
+    """
+    حذف یک جستجوی Sherlock
+    """
+    search_record = get_object_or_404(SherlockSearch, pk=pk)
+    username = search_record.username
+    
+    try:
+        search_record.delete()
+        messages.success(request, f'جستجوی "{username}" با موفقیت حذف شد')
+    except Exception as e:
+        messages.error(request, f'خطا در حذف جستجو: {str(e)}')
+    
+    return redirect('app:sherlock_search')
