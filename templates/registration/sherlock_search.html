@@ -179,7 +179,7 @@
                 {% for search in recent_searches %}
                 <tr>
                     <td><strong>{{ search.username }}</strong></td>
-                    <td>{{ search.search_date|date:"Y/m/d H:i" }}</td>
+                    <td>{{ search.jinfo }}</td>
                     <td>
                         <span class="status-badge status-{{ search.status }}">
                             {{ search.get_status_display }}

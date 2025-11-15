@@ -125,12 +125,12 @@
     }
 </style>
 
-<div class="result-container">
+<div class="result-container"> 
     <div class="header-box">
         <h1>نتایج جستجو: {{ search.username }}</h1>
         <div class="header-info">
             <div>
-                <strong>📅 تاریخ:</strong> {{ search.search_date|date:"Y/m/d H:i" }}
+                <strong>📅 تاریخ:</strong> {{ search.jinfo }}
             </div>
             <div>
                 <strong>📊 وضعیت:</strong> {{ search.get_status_display }}

@@ -52,10 +52,16 @@ class SherlockSearch(models.Model):
     results = models.JSONField(null=True, blank=True, verbose_name='نتایج')
     total_found = models.IntegerField(default=0, verbose_name='تعداد یافت شده')
     
+    def __str__(self):
+        return f"{self.username} - {self.search_date.jinfo}"
+    
+    def jinfo(self):
+        return jalali_converter(self.search_date)
+    jinfo.short_description = 'تاریخ درخواست'
+    
     class Meta:
         ordering = ['-search_date']
         verbose_name = 'جستجوی شرلوک'
         verbose_name_plural = 'جستجوهای شرلوک'
     
-    def __str__(self):
-        return f"{self.username} - {self.search_date.strftime('%Y/%m/%d')}"
+    
